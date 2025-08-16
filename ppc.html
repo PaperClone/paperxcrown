@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PaperCrown</title>
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+    <style>
+
+      :root {
+      --bg-light: #ffffff;
+      --bg-dark: #649C90;
+      --text-light: #2E4540;
+      --text-dark: #FAEEE8;
+      --sidebar-light: rgba(255, 255, 255, 0.6);
+      --sidebar-dark: rgba(0, 0, 0, 0.3);
+      --box-light: rgba(255, 255, 255, 0.85);
+      --box-dark: rgba(0, 0, 0, 0.4);
+      }
+      body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background 0.3s, color 0.3s;
+      }
+      body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background:
+      radial-gradient(circle at top left, #E89B7C 0%, transparent 60%),
+      radial-gradient(circle at top right, #F2D2AB 0%, transparent 60%),
+      radial-gradient(circle at bottom left, #9AAE94 0%, transparent 60%),
+      radial-gradient(circle at bottom right, #EBDAD2 0%, transparent 60%);
+      filter: blur(80px);
+      z-index: -1;
+      opacity: 0.9;
+      }
+      body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      }
+      aside {
+      width: 260px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-right: 1px solid rgba(255,255,255,0.3);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      }
+      body.dark aside {
+      background: var(--sidebar-dark);
+      }
+      .avatar-stack {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 15px;
+      cursor: pointer;  
+      }
+      .avatar-stack .avatar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      }
+
+      .avatar-light {
+      opacity: 1;
+      }
+
+      .avatar-dark {
+      opacity: 0;
+      }
+
+      body.dark .avatar-light {
+      opacity: 0;
+      }
+      body.dark .avatar-dark {
+      opacity: 1;
+      }
+
+      .avatar-hover {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: opacity 0.4s ease;
+      }
+
+      body:not(.dark) .avatar-link:hover .avatar-light {
+      opacity: 0;
+      }
+      body:not(.dark) .avatar-link:hover .avatar-hover-light {
+      opacity: 1;
+      }
+
+      body.dark .avatar-link:hover .avatar-dark {
+      opacity: 0;
+      }
+      body.dark .avatar-link:hover .avatar-hover-dark {
+      opacity: 1;
+      }
+      .name {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.3em;
+      }
+      .bio {
+      text-align: center;
+      font-size: 0.9em;
+      color: #444;
+      }
+      nav {
+      margin-top: 30px;
+      }
+      nav a,
+      .contact-toggle-label {
+      display: block;
+      padding: 10px 15px;
+      margin: 8px 0;
+      text-decoration: none;
+      color: inherit;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.4);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.8s ease, box-shadow 0.4s ease;
+      }
+      body.dark nav a,
+      body.dark .contact-toggle-label {
+      background: rgba(0,0,0,0.3);
+      transition: background 0.8s ease, box-shadow 0.4s ease;
+      }
+      .contact-toggle-label:hover {
+      background: linear-gradient(42deg,rgba(102, 155, 142, 75%) 0%, rgba(100, 156, 144, 75%) 74%);
+      box-shadow: 2px 2px 10px #649C90;
+      }
+      body.dark .contact-toggle-label:hover  {
+      background: linear-gradient(42deg,rgba(102, 155, 142, 75%) 0%, rgba(100, 156, 144, 75%) 74%);
+      box-shadow: 2px 2px 10px #649C90;
+      }   
+      .toggle {
+      margin-top: 30px;
+      text-align: center;
+      }
+      .toggle input {
+      display: none;
+      }
+      .toggle label {
+      display: inline-block;
+      width: 50px;
+      height: 25px;
+      background: #444;
+      border-radius: 25px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      }
+      .toggle label::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      background: #EFE0D9; 
+      border-radius: 50%;
+      position: absolute;
+      top: 2.5px;
+      left: 3px;
+      transition: 0.3s ease;
+      z-index: 1;
+      }
+      .toggle label::before {
+      content: "";
+      width: 10.5px;
+      height: 10.5px;
+      background: #444;
+      border-radius: 50%;
+      position: absolute;
+      top: 6px;
+      right: 3.4px;
+      z-index: 2;
+      opacity: 1 !important;
+      pointer-events: none;
+      }
+      #darkmode:checked + label::after {
+      left: 26px;
+      background: #EFE0D9;
+      }
+      .toggle label:hover::after {
+      box-shadow: 0px 0px 5px #EFE0D9;
+      }
+      #contactToggle {
+      display: none;
+      }
+      #contactToggle:checked ~ .contact-box {
+      display: block;
+      }
+      .contact-box {
+      display: none;
+      background: var(--box-light);
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 10px;
+      font-size: 0.9em;
+      user-select: text;
+      }
+      body.dark .contact-box {
+      background: var(--box-dark);
+      }
+      main {
+      margin-left: 320px;
+      padding: 40px 30px;
+      max-width: 900px;
+      }
+      .post {
+      background: var(--box-light);
+      backdrop-filter: blur(6px);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 30px;
+      transition: background 0.3s;
+      }
+      body.dark .post {
+      background: var(--box-dark);
+      }
+      .post-title {
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-bottom: 15px;
+      }
+      .post img.main-img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      }
+      .post-content {
+      position: relative;
+      line-height: 1.5em;
+      max-height: 3.2em;
+      overflow: hidden;
+      }
+      .post-content::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3em;
+      background: linear-gradient(to top, white, transparent);
+      pointer-events: none;
+      }
+      body.dark .post-content::after {
+      background: linear-gradient(to top, #649C90, transparent);
+      }
+      .post:has(input.seeMore:checked) .post-content {
+      max-height: none;
+      }
+      .post:has(input.seeMore:checked) .post-content::after {
+      display: none;
+      }
+      .see-more-btn::before {
+      content: '▼ See more...';
+      }
+      .post:has(input.seeMore:checked) .see-more-btn::before {
+      content: '▲ ...See less';
+      }
+      .see-more-btn {
+      display: inline-block;
+      font-size: 0.9em;
+      color: #6ec5af;
+      cursor: pointer;
+      margin-top: 10px;
+      user-select: none;
+      }
+      .see-more-btn:hover {
+      color: #E89B7C;
+      }   
+      .thumbs {
+      display: none;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+      }
+      .post:has(input.seeMore:checked) .thumbs {
+      display: flex;
+      }
+      .thumbs img {
+      width: 100px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s;
+      }
+      .thumbs img:hover {
+      transform: scale(1.25);
+      }
+
+      .lightbox {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      }
+      .lightbox.show {
+      display: flex;
+      opacity: 1;
+      }
+      .lightbox img {
+      max-width: 80%;
+      max-height: 80%;
+      border-radius: 5.5px;
+      box-shadow: 0 0 30px #00000066;
+      cursor: grab;
+      transition: transform 0.2s ease;
+      }
+      .lightbox-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.2em;
+      color: #fff;
+      background: linear-gradient(42deg,rgba(102, 155, 142, 1) 0%, rgba(100, 156, 144, 1) 74%);
+      box-shadow: 2px 2px 10px #649C90;
+      padding: 10px 16px;
+      border-radius: 5px;
+      user-select: none;
+      cursor: pointer;
+      z-index: 1001;
+      transition: background 0.2s;
+      }
+      .lightbox-arrow:hover {
+      background: linear-gradient(-42deg,#e9a07c 0%, rgba(229, 150, 121, 1) 75%);
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+      .lightbox-arrow.left {
+      left: 20px;
+      }
+      .lightbox-arrow.right {
+      right: 20px;
+      }
+      .zoom-level {
+      position: absolute;
+      bottom: 20px;
+      right: 30px;
+      font-size: 0.9em;
+      background: rgb(46, 69, 64, 90%);
+      box-shadow: 2px 2px 10px #649C90;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      pointer-events: none;
+      user-select: none;
+      z-index: 1002;
+      }
+      .zoom-controls {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgb(46, 69, 64, 90%);
+      box-shadow: 2px 2px 10px #649C90;
+      padding: 6px 12px;
+      border-radius: 6px;
+      z-index: 1003;
+      }
+      .zoom-controls:hover {
+      background: #a76e58;
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+      .zoom-controls input[type="range"] {
+      width: 160px;
+      appearance: none;
+      height: 4px;
+      background: linear-gradient(42deg,rgba(102, 155, 142, 1) 0%, rgba(100, 156, 144, 1) 74%);
+      box-shadow: 2px 2px 10px #649C90;
+      border-radius: 4px;
+      outline: none;
+      transition: background 0.2s;
+      }
+      .zoom-controls input[type="range"]:hover {
+      background: linear-gradient(-42deg,#e9a07c 0%, rgba(229, 150, 121, 1) 75%);
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+      .zoom-controls input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #ffffff;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid #999;
+      }
+      .zoom-controls input[type="range"]::-webkit-slider-thumb:hover {
+      background: linear-gradient(42deg,rgba(102, 155, 142, 1) 0%, rgba(100, 156, 144, 1) 74%);
+      box-shadow: 2px 2px 10px #649C90;
+      }
+      .zoom-controls button {
+      background: #FAEEE8;
+      color:rgb(46, 69, 64);;
+      border: none;
+      padding: 5px 10px;
+      font-size: 0.8em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+      }
+      .zoom-controls button:hover {
+      background: linear-gradient(42deg,rgba(102, 155, 142, 1) 0%, rgba(100, 156, 144, 1) 74%);
+      color:#FAEEE8;
+      box-shadow: 2px 2px 10px #649C90;
+      }
+      .category-filters {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      z-index: 100;
+      }
+      .category-btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      cursor: pointer;
+      user-select: none;
+      color: white;
+      border: none;
+      opacity: 0.5;
+      backdrop-filter: blur(2.5px);
+      transition: opacity 0.2s, background-color 0.2s;
+      }
+      .category-btn.active {
+      opacity: 75% !important;
+      }
+      .category-btn[data-category="all"] {
+      background-color: rgba(102, 102, 102, 0.5);
+      }
+      .category-btn[data-category="all"]:hover {
+      background-color: rgba(102, 102, 102, 0.699);
+      opacity: 75%;
+      }
+      .category-btn[data-category="concept"] {
+      background-color: rgba(153, 89, 181, 0.5);
+      }
+      .category-btn[data-category="concept"]:hover {
+      background-color: rgba(153, 89, 181, 0.699);
+      opacity: 75%;
+      }
+      .category-btn[data-category="update"] {
+      background-color: rgba(0, 119, 204, 0.5);
+      }
+      .category-btn[data-category="update"]:hover {
+      background-color: rgba(0, 119, 204, 0.699);
+      opacity: 75%;
+      }
+      .category-btn[data-category="new"] {
+      background-color: rgba(39, 174, 96, 0.5);
+      }
+      .category-btn[data-category="new"]:hover {
+      background-color: rgba(39, 174, 96, 0.699);
+      opacity: 75%;
+      }
+      .category-btn[data-category="random"] {
+      background-color: rgba(243, 156, 18, 0.5);
+      }
+      .category-btn[data-category="random"]:hover {
+      background-color: rgba(243, 156, 18, 0.699);
+      opacity: 75%;
+      }
+      .category-btn[data-category="other"] {
+      background-color: rgba(192, 57, 43, 0.5);
+      }
+      .category-btn[data-category="other"]:hover {
+      background-color: rgba(192, 57, 43, 0.699);
+      opacity: 75%;
+      }
+      .category-btn.active[data-category="all"] {
+      background-color: rgba(102, 102, 102, 0.85);
+      }
+      .category-btn.active[data-category="concept"] {
+      background-color: rgba(153, 89, 181, 0.85);
+      }
+      .category-btn.active[data-category="update"] {
+      background-color: rgba(0, 119, 204, 0.85);
+      }
+      .category-btn.active[data-category="new"] {
+      background-color: rgba(39, 174, 96, 0.85);
+      }
+      .category-btn.active[data-category="random"] {
+      background-color: rgba(243, 156, 18, 0.85);
+      }
+      .category-btn.active[data-category="other"] {
+      background-color: rgba(192, 57, 43, 0.85);
+      }
+      .category-label {
+      display: inline-block;
+      font-size: 0.75em;
+      padding: 4px 8px;
+      border-radius: 5px;
+      color: #fff;
+      margin-bottom: 5px;
+      }
+      .concept {
+      background-color: #9A59B5;
+      }
+      .update {
+      background-color: #0077cc;
+      }
+      .new {
+      background-color: #27ae60;
+      }
+      .random {
+      background-color: #f39c12;
+      }
+      .other {
+      background-color: #c0392b;
+      }
+      .post-date {
+      font-size: 0.8em;
+      opacity: 0.6;
+      margin-bottom: 10px;
+      }
+      .search-bar {
+      display: block;
+      width: 230px;
+      padding: 13px 15px;
+      margin: 8px 0;
+      border: none;
+      text-decoration: none;
+      font-size: 16px;
+      color: inherit;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.4);
+      cursor: pointer;
+      user-select: none;
+      }
+      .search-bar button {
+      cursor: pointer;
+      }
+      body.dark .search-bar{
+      background: rgba(0,0,0,0.3)
+      }    
+      .search-bar::placeholder {
+      color: var(--text-color);
+      opacity: 0.7;
+      }
+      @media (max-width: 600px) {
+      .search-bar {
+      width: 100px;
+      font-size: 0.9em;
+      }
+      }
+      .download-btn {
+      display: inline-block;
+      background: linear-gradient(42deg,rgba(102, 155, 142, 1) 0%, rgba(100, 156, 144, 1) 74%);
+      color: #fff;
+      box-shadow: 2px 2px 10px #649C90;
+      padding: 10px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      }
+      .download-btn:hover {
+      background: linear-gradient(-42deg,#e9a07c 0%, rgba(229, 150, 121, 1) 75%);
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+      .video-thumb-wrapper {
+      position: relative;
+      display: inline-block;
+      }
+      .video-thumb-wrapper::after {
+      content: "▶";
+      position: absolute;
+      bottom: 5px;
+      right: 7px;
+      font-size: 1.3em;
+      color: #FAEEE8;
+      text-shadow: 2px 2px 10px #F2D2AB; 
+      pointer-events: none;
+      user-select: none;
+      }
+      .video-lightbox {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 10px;  
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      }
+      .video-lightbox.show {
+      display: flex;
+      opacity: 1;
+      }
+      .video-lightbox video,
+      .video-lightbox iframe {
+      max-width: 80%;
+      max-height: 80%;
+      display: none;
+      border-radius: 10px;
+      }
+      .video-lightbox .play-btn {
+      font-size: 3em;
+      color: #FAEEE8;
+      padding: 10px 16px;
+      background: rgb(46, 69, 64, 75%);
+      box-shadow: 2px 2px 10px #649C90;
+      text-shadow: 2px 2px 10px #E89B7C;
+      border-radius: 5px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+      }
+      .video-lightbox .play-btn:hover {
+      transform: scale(1.1);
+      }
+      .play-btn:hover{
+      text-shadow: 2px 2px 10px #FAEEE8;  
+      background: rgb(167, 110, 88, 75%);
+      box-shadow: 2px 2px 10px rgb(232, 155, 124, 90%);
+      }
+      .video-lightbox .close-btn {
+      position: absolute;
+      top: 30px;
+      right: 25px;
+      font-size: 2em;
+      color: #ffffff;
+      background: rgb(46, 69, 64, 90%);
+      box-shadow: 2px 2px 10px #649C90;
+      padding: 10px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+      }
+      .video-lightbox .close-btn:hover {
+      background: #E89B7C;
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+      .video-prev { left: 20px; }
+      .video-next { right: 20px; }
+      #localVideo, #ytVideo {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+      #localVideo.showing, #ytVideo.showing {
+      opacity: 1;
+      transform: scale(1);
+      }
+
+      #localVideo{
+      border-radius: 5.5px;
+      box-shadow: 0 0 30px #00000066;
+      }
+      #ytVideo {
+      width: 1280px;      
+      height: 780px;     
+      max-width: 75%;   
+      border: none;
+      border-radius: 5.5px;
+      box-shadow: 0 0 30px #00000066;  
+      display: none;     
+      transition: opacity 0.3s ease;
+      opacity: 0;
+
+      margin: 0 auto;
+      }
+      #localVideo.showing,
+      #ytVideo.showing {
+      display: block;
+      opacity: 1;
+      }
+
+      #videoLightbox .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      font-size: 40px;
+      cursor: pointer;
+      }
+
+      .video-prev, .video-next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.2em;
+      color: white;
+      background: linear-gradient(42deg,rgba(102, 155, 142, 1) 0%, rgba(100, 156, 144, 1) 74%);
+      box-shadow: 2px 2px 10px #649C90;  
+      border: none;
+      border-radius: 5px;
+      padding: 10px 16px;
+      cursor: pointer;
+      z-index: 1001;
+      transition: background 0.2s;
+      }
+      .video-prev:hover, .video-next:hover {
+      background: linear-gradient(-42deg,#e9a07c 0%, rgba(229, 150, 121, 1) 75%);
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+      .video-prev {
+      left: 20px;
+      }
+      .video-next {
+      right: 20px;
+      }
+
+      .videoLightbox .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 2rem;
+      color: white;
+      background: rgb(46, 69, 64, 90%);
+      box-shadow: 2px 2px 10px #649C90;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.2s ease;
+      }
+      .videoLightbox .close-btn:hover {
+      background: #a76e58;
+      box-shadow: 2px 2px 10px #e9a07c;
+      }
+
+      #localVideo.showing,
+      #ytVideo.showing {
+      animation: fadeIn 0.3s ease forwards;
+      }
+      @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+      }
+
+      #videoPoster + .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      font-size: 3rem;
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      padding: 0.4em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      }
+      #videoPoster {
+      background: rgba(0, 0, 0, 0.7);
+      }
+      footer {
+      text-align: center;
+      font-size: 0.85em;
+      margin-top: 40px;
+      color: inherit;
+      opacity: 0.7;
+      user-select: none;
+      }
+      .red-link { color: #FF0033; cursor: pointer; text-decoration: none; transition: color 0.3s; }
+      .red-link:hover { color: #cc0000; text-decoration: underline; }
+      .pink-link { color: #c93f86; cursor: pointer; text-decoration: none; transition: color 0.3s; }
+      .pink-link:hover { color: #be0b68; text-decoration: underline; }
+      .purple-link { color: #a970ff; cursor: pointer; text-decoration: none; transition: color 0.3s; }
+      .purple-link:hover { color: #6a12ee; text-decoration: underline; }
+      .blue-link { color: #5865F1; cursor: url(myBall.cur); text-decoration: none; transition: color 0.3s; }
+      .blue-link:hover { color: #6e7085; text-decoration: underline; }
+      .normal-link { cursor: pointer; text-decoration: none; transition: color 0.3s; }
+      .normal-link:hover { color: #56d4d4; text-decoration: underline; }
+      .green-link { color: #5cab40; cursor: pointer; text-decoration: none; transition: color 0.3s; }
+      .green-link:hover { color: #65ee33; text-decoration: underline; }
+      .orange { text-decoration: line-through; opacity:0% ; }
+      .orange:hover { text-decoration: line-through; color: #edbc83; cursor: help; opacity:75% ; }
+      @media (max-width: 768px) {
+      aside { display: none; }
+      main { margin: 0; padding: 20px; }
+      }
+      .about-post .post-content {
+      max-height: none !important;
+      overflow: visible !important;
+      }
+      .about-post .post-content::after {
+      display: none !important;
+      }
+      #toggleAboutBtn:hover {
+      background: linear-gradient(42deg, rgba(102, 155, 142, 0.75) 0%, rgba(100, 156, 144, 0.75) 74%);
+      box-shadow: 2px 2px 10px #649C90;
+      cursor: pointer;
+      }
+      .fade {
+      opacity: 1;
+      transition: opacity 0.25s ease;
+      }
+      .fade-out {
+      opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lightbox" id="lightbox">
+      <div class="lightbox-arrow left" onclick="prevImage()">←</div>
+      <img src="" alt="Zoomed thumbnail" id="lightbox-img" />
+      <div class="zoom-level" id="zoomLevel">100%</div>
+      <div class="zoom-controls">
+        <input type="range" id="zoomSlider" min="1" max="4" step="0.01" value="1" />
+        <button onclick="resetZoom()">Reset</button>
+      </div>
+      <div class="lightbox-arrow right" onclick="nextImage()">→</div>
+    </div>
+    <div class="video-lightbox" id="videoLightbox">
+      <div class="close-btn" onclick="closeVideoLightbox()">✕</div>
+      <div class="play-btn" onclick="startVideoPlayback()">▶</div>
+      <img id="videoPoster"
+        style="max-width: 80%; max-height: 80%; border-radius: 10px; margin-bottom: 10px;
+        box-shadow: 0 0 30px #00000066;" />
+      <video id="localVideo" loop controls style="display: none;"></video>
+      <iframe id="ytVideo" allowfullscreen allow="autoplay" style="display: none;"></iframe>
+      <div class="video-prev">←</div>
+      <div class="video-next">→</div>
+    </div>
+    </div>
+    <div class="category-filters">
+      <button class="category-btn" data-category="all">📋 All</button>
+      <button class="category-btn" data-category="concept">🧠 Concept</button>
+      <button class="category-btn" data-category="update">🔄 Update</button>
+      <button class="category-btn" data-category="new">🆕 New</button>
+      <button class="category-btn" data-category="random">🎲 Random</button>
+      <button class="category-btn" data-category="other">❓ Other</button>
+    </div>
+    <aside>
+      <div class="avatar-stack avatar-link">
+        <img src="images/logo.png" alt="Avatar Light" class="avatar avatar-light" />
+        <img src="images/logo-dark.png" alt="Avatar Dark" class="avatar avatar-dark" />
+        <img src="images/logo-hover.png" alt="Avatar Hover Light" class="avatar avatar-hover avatar-hover-light" />
+        <img src="images/logo-dark-hover.png" alt="Avatar Hover Dark" class="avatar avatar-hover avatar-hover-dark" />
+      </div>
+      <div class="name">PaperCrown</div>
+      <div class="bio">Content creator / Developper / Designer</div>
+      <a onclick="window.location.href='https://www.youtube.com/shorts/gk6ihfEzx_0';"><span class="orange">silly car</span></a>
+      <nav>
+        <input type="text" id="searchInput" placeholder="🔍 Search..." class="menu-btn search-bar">
+        <a href="#" id="toggleAboutBtn">👤 About</a>
+        <label for="contactToggle" class="contact-toggle-label">📫 Contact</label>
+        <input type="checkbox" id="contactToggle" hidden />
+        <div class="contact-box">
+          <a onclick="window.location.href='mailto:paperxcrown.me@gmail.com';"><span class="normal-link">paperxcrown.me@gmail.com</span></a>
+          <a onclick="window.location.href='https://www.youtube.com/@paperxcrown';"><span class="red-link">youtube.com/@paperxcrown</span></a>
+          <a onclick="window.location.href='https://www.instagram.com/xpapercrown';"><span class="pink-link">instagram.com/xpapercrown</span></a>
+          <a onclick="window.location.href='https://www.twitch.tv/paperxcrown';"><span class="purple-link">twitch.tv/paperxcrown</span></a>
+          <a><span class="blue-link">discord.gg/@ppcrown</span></a>
+        </div>
+      </nav>
+      <div class="toggle">
+        <input type="checkbox" id="darkmode" onchange="document.body.classList.toggle('dark')" />
+        <label for="darkmode"></label>
+        <div style="font-size: 0.9em; margin-top: 5px;">Dark Mode</div>
+      </div>
+    </aside>
+    <main class="fade">
+      <div class="post about-post" style="display:none;">
+        <div class="post-title">👤 About Me</div>
+        <div class="post-content">
+          Hey, I'm Paper / PaperCrown a content creator generally Minecraft related, web/game developer, and designer. This is my personal site where i post updates, concept, project, etc. This site is still work and i'm constantly working aside on it so you might experience bug or unoptimization
+        </div>
+      </div>
+      <div class="post" data-group="post1" data-category="update concept" data-keywords="texture pack filter minecraft">
+        <div class="category-label update">🔄 Update</div>
+        <div class="category-label concept">🧠 Concept</div>
+        <div class="post-title">xBRZ filter</div>
+        <div class="post-date">July 10, 2025</div>
+        <img class="main-img" src="images/projects/xBRZ/xBRZ-0-thumbnail.png" alt="xBRZ filter Minecraft screenshot"  onclick="showLightbox(this.src, 'post1')" />
+        <input type="checkbox" class="seeMore" id="seeMore1" hidden />
+        <div class="post-content">
+<b style="font-weight: bold; ">xBRZ filter</b> is a Minecraft texture pack upscaling the vanilla textures using xBRZ algorithm (not an AI) (by <b style="font-weight: bold; ">Hyllian</b> and <b style="font-weight: bold; ">Zenju</b>) with additionnal refining while trying to keep the vanilla looks and feel as much as possible, with different resolution settings (2x up to 5x) that should suit to about every device.
+Even though the process of making this pack was automated, i still spend 6 months researching, testing coding 3rd party tools and script while also refining the textures, at the end though was worth every second but i still look forward to improving it so try the pack and report a bug / texture in my discord channel "xBRZ/bug". <p style="text-decoration: underline; font-size: 20px; font-weight: bold; ">You're allowed to:</p> Share link to the texture pack, Use in a video (not necessary but a credit would be appreciated), Use some textures but ask my permission first and then credit. <p style="text-decoration: underline; color: red; font-size: 20px; font-weight: bold; ">You're not allowed to:</p> Claim it's yours, Take the textures and put it in a modpack or something without permission, Upload elsewhere without permission
+         </div>
+        <label for="seeMore1" class="see-more-btn"></label>
+        <div class="thumbs">
+          <img src="images/projects/xBRZ/xBRZ-2-thumbnail.png" alt="thumbnail 1" onclick="showLightbox(this.src, 'post1')" />
+          <div class="video-thumb-wrapper">
+            <img src="images/projects/xBRZ/xBRZ-1-thumbnail.png" alt="Local video" onclick="showVideoLightbox('local', 'images/projects/xBRZ/xBRZ-1.mp4')" />
+          </div>
+        <div class="download-link" id="download1" style="display: none; margin-top: 15px;">
+          <a href="downloads/xBRZ/xBRZ_filter.mcpack" download class="download-btn">➤ Download: File.zip</a>
+        </div>
+      </div>
+      </div>
+      <footer>
+        © 2025 PaperCrown. All rights reserved. 
+      </footer>
+    </main>
+    <script>
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      const zoomSlider = document.getElementById('zoomSlider');
+      const zoomLevelText = document.getElementById('zoomLevel');
+
+      let currentImages = [], currentIndex = 0;
+      let scale = 1, isDragging = false, startX, startY, lastX = 0, lastY = 0;
+
+      function showLightbox(src, group) {
+        const allThumbs = [...document.querySelectorAll(`.post[data-group="${group}"] .thumbs img`)];
+        currentImages = allThumbs.filter(img => !img.closest('.video-thumb-wrapper'));
+        currentIndex = currentImages.findIndex(img => img.src === src);
+        lightboxImg.src = src;
+        lightbox.classList.add('show');
+        resetZoom();
+      }
+
+      function prevImage() {
+        if (currentIndex > 0) {
+          currentIndex--;
+          lightboxImg.src = currentImages[currentIndex].src;
+          resetZoom();
+        }
+      }
+
+      function nextImage() {
+        if (currentIndex < currentImages.length - 1) {
+          currentIndex++;
+          lightboxImg.src = currentImages[currentIndex].src;
+          resetZoom();
+        }
+      }
+
+      function resetZoom() {
+        scale = 1;
+        lastX = 0;
+        lastY = 0;
+        zoomSlider.value = 1;
+        updateTransform();
+      }
+
+      function updateTransform() {
+        lightboxImg.style.transform = `scale(${scale}) translate(${lastX}px, ${lastY}px)`;
+        zoomLevelText.textContent = `${Math.round(scale * 100)}%`;
+      }
+
+      zoomSlider.addEventListener('input', () => {
+        scale = parseFloat(zoomSlider.value);
+        updateTransform();
+      });
+
+      lightboxImg.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        scale += e.deltaY * -0.001;
+        scale = Math.min(Math.max(1, scale), 4);
+        zoomSlider.value = scale;
+        updateTransform();
+      });
+
+      lightboxImg.addEventListener('mousedown', (e) => {
+        if (scale === 1) return;
+        isDragging = true;
+        startX = e.clientX - lastX;
+        startY = e.clientY - lastY;
+        lightboxImg.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        lightboxImg.style.cursor = 'grab';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        lastX = e.clientX - startX;
+        lastY = e.clientY - startY;
+        updateTransform();
+      });
+
+      lightboxImg.addEventListener('dblclick', () => {
+        scale = scale === 1 ? 2 : 1;
+        lastX = lastY = 0;
+        zoomSlider.value = scale;
+        updateTransform();
+      });
+
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+          lightbox.classList.remove('show');
+        }
+      });
+
+      const videoLightbox = document.getElementById('videoLightbox');
+      const localVideo = document.getElementById('localVideo');
+      const ytVideo = document.getElementById('ytVideo');
+      const playBtn = videoLightbox.querySelector(".play-btn");
+      const closeBtn = videoLightbox.querySelector(".close-btn");
+      const prevBtn = videoLightbox.querySelector(".video-prev");
+      const nextBtn = videoLightbox.querySelector(".video-next");
+      const posterImg = document.getElementById('videoPoster');
+
+      let currentVideoThumbs = [];
+      let videoIndex = 0;
+
+      function showVideoLightbox(type, src) {
+        videoLightbox.classList.add('show');
+        resetVideoState();
+
+        currentVideoThumbs = [...document.querySelectorAll('.video-thumb-wrapper img')];
+        videoIndex = currentVideoThumbs.findIndex(img =>
+          img.getAttribute('onclick')?.includes(src)
+        );
+
+        if (currentVideoThumbs[videoIndex]) {
+          posterImg.src = currentVideoThumbs[videoIndex].src;
+          posterImg.style.display = 'block';
+        }
+
+        if (type === 'local') {
+          localVideo.dataset.src = src;
+        } else if (type === 'youtube') {
+          ytVideo.dataset.src = src;
+        }
+
+        playBtn.style.display = 'block';
+      }
+
+      function startVideoPlayback() {
+        playBtn.style.display = 'none';
+        posterImg.style.display = 'none';
+
+        const type = localVideo.dataset.src ? 'local' : 'youtube';
+        const src = localVideo.dataset.src || ytVideo.dataset.src;
+
+        if (type === 'local') {
+          localVideo.src = src;
+          localVideo.style.display = 'block';
+          setTimeout(() => localVideo.classList.add('showing'), 10);
+          localVideo.loop = true; 
+          localVideo.play();
+          localVideo.onended = resetVideoState;
+        } else if (type === 'youtube') {
+          const embedUrl = convertToEmbedUrl(src);
+          ytVideo.src = embedUrl;
+          ytVideo.style.display = 'block';
+          setTimeout(() => ytVideo.classList.add('showing'), 10);
+        }
+      }
+
+      function resetVideoState() {
+        localVideo.pause();
+        localVideo.removeAttribute('src');
+        ytVideo.removeAttribute('src');
+
+        localVideo.dataset.src = '';
+        ytVideo.dataset.src = '';
+
+        localVideo.style.display = 'none';
+        ytVideo.style.display = 'none';
+
+        localVideo.classList.remove('showing');
+        ytVideo.classList.remove('showing');
+
+        posterImg.style.display = 'block';
+        playBtn.style.display = 'block';
+      }
+
+      function closeVideoLightbox() {
+        videoLightbox.classList.remove('show');
+        resetVideoState();
+      }
+
+      function videoNav(dir) {
+        if (currentVideoThumbs.length === 0) return;
+
+        videoIndex = dir === 'prev'
+          ? (videoIndex - 1 + currentVideoThumbs.length) % currentVideoThumbs.length
+          : (videoIndex + 1) % currentVideoThumbs.length;
+
+        currentVideoThumbs[videoIndex].click();
+      }
+
+      function convertToEmbedUrl(src) {
+        let videoId = '';
+        if (src.includes('youtube.com/watch')) {
+          const match = src.match(/v=([^&]+)/);
+          if (match) videoId = match[1];
+        } else if (src.includes('youtu.be/')) {
+          const match = src.match(/youtu\.be\/([^?]+)/);
+          if (match) videoId = match[1];
+        } else if (src.includes('/embed/')) {
+          videoId = src.split('/embed/')[1]?.split('?')[0];
+        }
+
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&loop=1&playlist=${videoId}`;
+      }
+
+      playBtn.onclick = startVideoPlayback;
+      closeBtn.onclick = closeVideoLightbox;
+      prevBtn.onclick = () => videoNav('prev');
+      nextBtn.onclick = () => videoNav('next');
+
+      document.addEventListener("keydown", function(e) {
+        if (lightbox.classList.contains("show")) {
+          if (e.key === "ArrowLeft") {
+            prevImage();
+          } else if (e.key === "ArrowRight") {
+            nextImage();
+          } else if (e.key === "Escape") {
+            lightbox.classList.remove('show');
+          }
+        } else if (videoLightbox.classList.contains("show")) {
+          if (e.key === "ArrowLeft") {
+            videoNav('prev');
+          } else if (e.key === "ArrowRight") {
+            videoNav('next');
+          } else if (e.key === "Escape") {
+            closeVideoLightbox();
+          }
+        }
+      });
+
+      const posts = document.querySelectorAll('.post');
+      const categoryButtons = document.querySelectorAll('.category-btn[data-category]');
+      const searchInput = document.getElementById('searchInput');
+
+      let activeCategories = new Set();
+
+      function filterPosts() {
+        const query = searchInput.value.trim().toLowerCase();
+
+      posts.forEach(post => {
+      if (post.classList.contains('about-post')) {
+      post.style.display = 'none'; 
+      return;
+      }
+
+          const postCategories = post.dataset.category?.split(' ') || [];
+          const matchesCategory =
+            activeCategories.size === 0 ||
+            Array.from(activeCategories).every(cat => postCategories.includes(cat));
+
+          const title = post.querySelector('.post-title')?.textContent.toLowerCase() || '';
+          const content = post.querySelector('.post-content')?.textContent.toLowerCase() || '';
+          const date = post.querySelector('.post-date')?.textContent.toLowerCase() || '';
+          const keywords = post.dataset.keywords?.toLowerCase() || '';
+          const matchesSearch = title.includes(query) || content.includes(query) || date.includes(query) || keywords.includes(query) || query === '';
+
+          post.style.display = matchesCategory && matchesSearch ? 'block' : 'none';
+        });
+      }
+
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const category = button.dataset.category;
+
+          if (category === 'all') {
+            activeCategories.clear();
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+          } else {
+            document.querySelector('.category-btn[data-category="all"]')?.classList.remove('active');
+            if (activeCategories.has(category)) {
+              activeCategories.delete(category);
+              button.classList.remove('active');
+            } else {
+              activeCategories.add(category);
+              button.classList.add('active');
+            }
+
+            if (activeCategories.size === 0) {
+              document.querySelector('.category-btn[data-category="all"]')?.classList.add('active');
+            }
+          }
+
+          filterPosts();
+        });
+      });
+
+      searchInput.addEventListener('input', () => {
+      if (aboutActive) return; 
+
+      const query = searchInput.value.toLowerCase();
+      document.querySelectorAll('main .post:not(.about-post)').forEach(post => {
+      const content = post.textContent.toLowerCase();
+      post.style.display = content.includes(query) ? 'block' : 'none';
+      });
+      });
+
+      const seeMore1 = document.getElementById('seeMore1');
+      const download1 = document.getElementById('download1');
+      if (seeMore1 && download1) {
+        seeMore1.addEventListener('change', () => {
+          download1.style.display = seeMore1.checked ? 'block' : 'none';
+        });
+      }
+
+      const toggleAboutBtn = document.getElementById('toggleAboutBtn');
+      const categoryFilters = document.querySelector('.category-filters');
+      const aboutPost = document.querySelector('.about-post');
+      const allPosts = document.querySelectorAll('main > .post');
+
+      let aboutActive = false;
+
+      toggleAboutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      const mainContent = document.querySelector('main');
+
+      mainContent.classList.add('fade-out');
+
+      setTimeout(() => {
+      aboutActive = !aboutActive;
+
+      if (aboutActive) {
+
+      activeCategories.clear();
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelector('.category-btn[data-category="all"]')?.classList.add('active');
+      allPosts.forEach(post => {
+      if (post.classList.contains('about-post')) {
+        post.style.display = 'block';
+      } else {
+        post.style.display = 'none';
+      }
+      });
+      categoryFilters.style.display = 'none';
+      toggleAboutBtn.textContent = '📂 Projects';
+      } else {
+
+      allPosts.forEach(post => {
+      if (post.classList.contains('about-post')) {
+        post.style.display = 'none';
+      } else {
+        post.style.display = 'block';
+      }
+      });
+      categoryFilters.style.display = 'flex';
+      toggleAboutBtn.textContent = '👤 About';
+      }
+
+      mainContent.classList.remove('fade-out');
+      }, 250); 
+      });
+      const mainContainer = document.querySelector('main');
+      const avatarStack = document.querySelector('.avatar-stack');
+
+      avatarStack.addEventListener('click', () => {
+
+      mainContainer.classList.add('fade-out');
+
+      setTimeout(() => {
+      if (aboutActive) {
+
+      aboutActive = false;
+      allPosts.forEach(post => {
+        if (post.classList.contains('about-post')) {
+          post.style.display = 'none';
+        } else {
+          post.style.display = 'block';
+        }
+      });
+      categoryFilters.style.display = 'flex';
+      toggleAboutBtn.textContent = '👤 About';
+      }
+
+      mainContainer.classList.remove('fade-out');
+      mainContainer.classList.add('fade-in');
+
+      setTimeout(() => {
+      mainContainer.classList.remove('fade-in');
+      }, 250);
+
+      }, 250); 
+      });
+    </script>
+  </body>
+</html>
